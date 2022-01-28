@@ -23,6 +23,12 @@ class Investor(models.Model):
     def __str__(self):
         return f"Investor: {self.name}"
 
+    @property
+    def possible_projects(self):
+        list_of_projects = Project.objects.filter(amount__lte=self.individual_amount,
+                                            delivery_date__lte=self.project_delivery_deadline,
+                                            funded=False).filter(amount__lte=self.remaining_amount).values_list('pk')
+        return list_of_projects
 
 class Project(models.Model):
     name = models.CharField(
@@ -49,3 +55,10 @@ class Project(models.Model):
 
     def __str__(self):
         return f"Project: {self.name}"
+
+    @property
+    def possible_investors(self):
+        list_of_investors = Investor.objects.filter(project_delivery_deadline__gte=self.delivery_date,
+                                            individual_amount__gte=self.amount,
+                                            total_amount__gte=self.amount).values_list('pk')
+        return list_of_investors
