@@ -80,5 +80,30 @@ class InvestIntoProject(APIView):
             data={
                 "funded_project": ProjectSerializer(instance=project_to_invest_into).data,
                 "remaining_amount": investor.remaining_amount
-            }
-        )
+            }, 
+            status=status.HTTP_201_CREATED)
+
+
+class ProjectsForInvestor(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        investor = get_object_or_404(Investor, pk=self.kwargs['pk'])
+        queryset = Project.objects.filter(amount__lte=investor.individual_amount,
+                                            delivery_date__lte=investor.project_delivery_deadline,
+                                            funded=False).filter(amount__lte=investor.remaining_amount)
+        return queryset
+
+
+class InvestorsForProject(generics.ListAPIView):
+    serializer_class = InvestorSerializer
+
+    def get_queryset(self):
+        project = get_object_or_404(Project, pk=self.kwargs['pk'])
+        if project.funded:
+            Response(data={"details": "This project has been funded."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = Investor.objects.filter(project_delivery_deadline__gte=project.delivery_date,
+                                            individual_amount__gte=project.amount,
+                                            total_amount__gte=project.amount)
+        return queryset

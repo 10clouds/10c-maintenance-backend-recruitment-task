@@ -18,6 +18,8 @@ class InvestorSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailsSerializer(serializers.ModelSerializer):
+    possible_investors = serializers.ReadOnlyField()
+
     class Meta:
         model = Project
         fields = "__all__"
@@ -25,6 +27,8 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
 
 
 class InvestorDetailsSerializer(serializers.ModelSerializer):
+    possible_projects = serializers.ReadOnlyField()
+
     class Meta:
         model = Investor
         fields = "__all__"
